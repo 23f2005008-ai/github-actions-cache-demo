@@ -1,0 +1,37 @@
+name: Simple Cache Demo
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  cache-demo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup cache
+      uses: actions/cache@v4
+      id: dep-cache
+      with:
+        path: .cache
+        key: cache-1f794a9-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+        
+    - name: prime-cache-1f794a9
+      run: |
+        echo "Cache hit: ${{ steps.dep-cache.outputs.cache-hit }}"
+        if [ "${{ steps.dep-cache.outputs.cache-hit }}" == "true" ]; then
+          echo "✅ Cache restored successfully!"
+        else
+          echo "📦 Priming cache for future runs..."
+          mkdir -p .cache
+          echo "cached-data" > .cache/dependencies.txt
+        fi
+        
+    - name: Verify setup
+      run: |
+        echo "Cache demonstration completed"
+        echo "Key used: cache-1f794a9"
